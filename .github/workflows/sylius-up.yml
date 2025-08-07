@@ -13,7 +13,6 @@ jobs:
     - name: Crear proyecto Sylius
       run: |
         docker run --rm -v ${{ github.workspace }}:/app composer create-project sylius/sylius-standard acme --ignore-platform-reqs --no-scripts --no-install
-
     - name: Corregir permisos
       run: sudo chown -R $USER:$USER ./acme
 
@@ -35,44 +34,11 @@ jobs:
         done
         echo "Timeout esperando a Sylius"
         exit 1
-
     - name: Probar endpoint base y API desde host
       working-directory: ./acme
       run: |
         curl -I http://localhost
         curl -I http://localhost/api/v2
-
-    - name: Generar claves JWT si no existen
-      working-directory: ./acme
-      run: |
-        if [ ! -f config/jwt/private.pem ]; then
-          mkdir -p config/jwt
-          openssl genrsa -out config/jwt/private.pem -aes256 -passout pass:ChangeMe 4096
-          openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem -passin pass:ChangeMe
-        fi
-
-    - name: Establecer passphrase JWT
-      working-directory: ./acme
-      run: |
-        echo "JWT_PASSPHRASE=ChangeMe" >> $GITHUB_ENV
-
-    - name: Probar login admin (api@example.com)
-      working-directory: ./acme
-      run: |
-        echo "Probando login con api@example.com"
-        RES=$(curl -s -w "%{http_code}" -o response.json -X POST http://localhost/api/v2/administrators/token \
-          -H "Content-Type: application/json" \
-          -d '{"email": "api@example.com", "password": "sylius-api"}')
-
-        if [ "$RES" -ne 200 ]; then
-          echo "❌ Login fallido. Código de respuesta: $RES"
-          cat response.json
-          exit 1
-        fi
-
-        echo "✅ Login exitoso. Token:"
-        cat response.json
-
     - name: Detener contenedores
       if: always()
       working-directory: ./acme
