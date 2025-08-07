@@ -3,7 +3,7 @@ name: Init Sylius via Docker
 on:
   push:
     branches:
-      - sylius-tests  # Cambia esto si tu rama tiene otro nombre
+      - development  # Cambia esto si tu rama tiene otro nombre
 
 jobs:
   setup-sylius:
