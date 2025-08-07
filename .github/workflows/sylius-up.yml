@@ -39,8 +39,8 @@ jobs:
     - name: Probar endpoint base y API dentro del contenedor PHP
       working-directory: ./acme
       run: |
-        docker compose exec php curl -I http://localhost:8000
-        docker compose exec php curl -I http://localhost:8000/api/v2
+        docker compose exec php curl -I http://localhost
+        docker compose exec php curl -I http://localhost/api/v2
 
     - name: Detener contenedores
       if: always()
