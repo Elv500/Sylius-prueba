@@ -3,7 +3,7 @@ name: Levantar Sylius y listar endpoints
 on:
   push:
     branches:
-      - sylius-tests  # Cambia por tu rama real si es necesario
+      - development  # Cambia por tu rama real si es necesario
 
 jobs:
   levantar-y-listar:
