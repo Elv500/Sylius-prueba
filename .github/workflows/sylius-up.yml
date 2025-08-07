@@ -10,7 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
+    - name: Crear proyecto Sylius
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/app composer create-project sylius/sylius-standard acme --ignore-platform-reqs --no-scripts --no-install
+
+    - name: Corregir permisos
+      run: sudo chown -R $USER:$USER ./acme
+
+    - name: Inicializar Sylius
+      working-directory: ./acme
+      run: make init
+
     - name: Crear superusuario directamente en base de datos
       run: |
         docker compose exec postgres psql -U sylius -d sylius -c "
@@ -24,17 +34,6 @@ jobs:
           'a:1:{i:0;s:10:\"ROLE_ADMIN\";}'
         );
         "
-
-    - name: Corregir permisos
-      run: sudo chown -R $USER:$USER ./acme
-
-    - name: Inicializar Sylius
-      working-directory: ./acme
-      run: make init
-
-    - name: Crear superusuario admin@example.com
-      working-directory: ./acme
-      run: docker compose exec php php bin/console sylius:admin-user:create admin@example.com admin123 --administrator
 
     - name: Esperar a que Sylius esté disponible (desde host)
       working-directory: ./acme
