@@ -1,0 +1,15 @@
+name: Check tools
+
+on:
+  push:
+    branches: [ development ]
+
+jobs:
+  check-tools:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Show versions
+      run: |
+        make --version
+        docker --version
+        docker compose version
