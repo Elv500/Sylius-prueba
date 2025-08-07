@@ -42,10 +42,24 @@ jobs:
         curl -I http://localhost
         curl -I http://localhost/api/v2
 
-    - name: Probar login admin (sylius@example.com)
+    - name: Generar claves JWT si no existen
       working-directory: ./acme
       run: |
-        echo "Probando login con sylius@example.com"
+        if [ ! -f config/jwt/private.pem ]; then
+          mkdir -p config/jwt
+          openssl genrsa -out config/jwt/private.pem -aes256 -passout pass:ChangeMe 4096
+          openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem -passin pass:ChangeMe
+        fi
+
+    - name: Establecer passphrase JWT
+      working-directory: ./acme
+      run: |
+        echo "JWT_PASSPHRASE=ChangeMe" >> $GITHUB_ENV
+
+    - name: Probar login admin (api@example.com)
+      working-directory: ./acme
+      run: |
+        echo "Probando login con api@example.com"
         RES=$(curl -s -w "%{http_code}" -o response.json -X POST http://localhost/api/v2/admin/administrators/token \
           -H "Content-Type: application/json" \
           -d '{"email": "api@example.com", "password": "sylius-api"}')
