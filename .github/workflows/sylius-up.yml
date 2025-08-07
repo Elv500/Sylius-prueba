@@ -36,10 +36,13 @@ jobs:
           echo "❌ Timeout esperando Sylius"
           exit 1
 
-      - name: Listar endpoints de la API
+      - name: Diagnóstico contenido API
         working-directory: ./acme
         run: |
-          curl http://localhost/api | jq '.paths | keys'
+          echo "Status code:"
+          curl -s -o /dev/null -w "%{http_code}" http://localhost/api/v2
+          echo "Contenido (primeras 20 líneas):"
+          curl -s -L http://localhost/api/v2 | head -20
 
       - name: Detener contenedores
         if: always()
