@@ -23,9 +23,9 @@ jobs:
 
     - name: Esperar a que Sylius esté disponible
       run: |
-        echo "Esperando a que Sylius esté disponible en http://localhost"
+        echo "Esperando a que Sylius esté disponible en http://localhost:8000"
         for i in {1..30}; do
-          if curl -s --head http://localhost | grep "200 OK" > /dev/null; then
+          if curl -s --head http://localhost:8000 | grep "200 OK" > /dev/null; then
             echo "Sylius está listo 🚀"
             exit 0
           fi
@@ -34,6 +34,13 @@ jobs:
         done
         echo "Timeout esperando a Sylius"
         exit 1
+
+    - name: Probar endpoint base y API
+      run: |
+        echo "Probando endpoint base http://localhost:8000"
+        curl -I http://localhost:8000
+        echo "Probando endpoint API http://localhost:8000/api/v2"
+        curl -I http://localhost:8000/api/v2
 
     - name: Detener contenedores
       if: always()
