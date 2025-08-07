@@ -36,13 +36,14 @@ jobs:
           echo "❌ Timeout esperando Sylius"
           exit 1
 
-      - name: Diagnóstico contenido API
-        working-directory: ./acme
+      - name: Listar carpetas raíz y /app (donde está Sylius)
         run: |
-          echo "Status code:"
-          curl -s -o /dev/null -w "%{http_code}" http://localhost/api/v2
-          echo "Contenido (primeras 20 líneas):"
-          curl -s -L http://localhost/api/v2 | head -20
+          docker compose exec php bash -c "ls -l /app"
+          docker compose exec php bash -c "ls -l /app/config"
+          docker compose exec php bash -c "ls -l /app/src"
+
+      - name: Mostrar logs de Symfony
+        run: docker compose exec php tail -40 var/log/dev.log
 
       - name: Detener contenedores
         if: always()
