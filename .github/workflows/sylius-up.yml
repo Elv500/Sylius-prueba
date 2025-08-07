@@ -14,19 +14,17 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Set up Docker Compose
-      run: |
-        docker compose up -d
+      run: docker compose up -d
 
     - name: Wait for PHP container to be ready
       run: |
-        # Ajusta "acme_php_1" al nombre real de tu contenedor PHP
-        until docker exec acme_php_1 php bin/console about; do
+        until docker compose exec php php bin/console about; do
           echo "Esperando a que PHP esté listo..."
           sleep 5
         done
 
     - name: Limpiar cache Sylius para confirmar que funciona
-      run: docker exec acme_php_1 php bin/console cache:clear
+      run: docker compose exec php php bin/console cache:clear
 
     # - name: Ejecutar pruebas con pytest
     #   run: |
