@@ -24,9 +24,9 @@ jobs:
     - name: Esperar a que Sylius esté disponible (desde host)
       working-directory: ./acme
       run: |
-        echo "Esperando a que Sylius esté disponible en http://localhost:8000"
+        echo "Esperando a que Sylius esté disponible en http://localhost/api/v2"
         for i in {1..30}; do
-          if curl -s --head http://localhost:8000/api/v2 | grep "200 OK" > /dev/null; then
+          if curl -s --head http://localhost/api/v2 | grep "200 OK" > /dev/null; then
             echo "Sylius está listo 🚀"
             exit 0
           fi
@@ -39,8 +39,8 @@ jobs:
     - name: Probar endpoint base y API desde host
       working-directory: ./acme
       run: |
-        curl -I http://localhost:8000
-        curl -I http://localhost:8000/api/v2
+        curl -I http://localhost
+        curl -I http://localhost/api/v2
 
     - name: Detener contenedores
       if: always()
