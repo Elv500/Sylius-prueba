@@ -21,12 +21,12 @@ jobs:
       working-directory: ./acme
       run: make init
 
-    - name: Esperar a que Sylius esté disponible (desde dentro del contenedor)
+    - name: Esperar a que Sylius esté disponible (desde host)
       working-directory: ./acme
       run: |
-        echo "Esperando a que Sylius esté listo dentro del contenedor PHP"
+        echo "Esperando a que Sylius esté disponible en http://localhost:8000"
         for i in {1..30}; do
-          if docker compose exec php php bin/console about; then
+          if curl -s --head http://localhost:8000/api/v2 | grep "200 OK" > /dev/null; then
             echo "Sylius está listo 🚀"
             exit 0
           fi
@@ -36,11 +36,11 @@ jobs:
         echo "Timeout esperando a Sylius"
         exit 1
 
-    - name: Probar endpoint base y API dentro del contenedor PHP
+    - name: Probar endpoint base y API desde host
       working-directory: ./acme
       run: |
-        docker compose exec php curl -I http://localhost
-        docker compose exec php curl -I http://localhost/api/v2
+        curl -I http://localhost:8000
+        curl -I http://localhost:8000/api/v2
 
     - name: Detener contenedores
       if: always()
