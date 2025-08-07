@@ -10,9 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Crear proyecto Sylius
+    
+    - name: Crear superusuario directamente en base de datos
       run: |
-        docker run --rm -v ${{ github.workspace }}:/app composer create-project sylius/sylius-standard acme --ignore-platform-reqs --no-scripts --no-install
+        docker compose exec postgres psql -U sylius -d sylius -c "
+        INSERT INTO sylius_admin_user (id, email, username, password, enabled, roles)
+        VALUES (
+          nextval('sylius_admin_user_id_seq'),
+          'admin@example.com',
+          'admin',
+          '\$2y\$13\$mXQuY1hkWvFZ4Iq9FTAXe.CeqAvF/FGLER/iwTebcMxaQbz8XRz1i', -- contraseña: admin123
+          true,
+          'a:1:{i:0;s:10:\"ROLE_ADMIN\";}'
+        );
+        "
 
     - name: Corregir permisos
       run: sudo chown -R $USER:$USER ./acme
