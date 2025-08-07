@@ -23,7 +23,7 @@ jobs:
 
     - name: Crear superusuario admin@example.com
       working-directory: ./acme
-      run: docker compose exec php php bin/console sylius:admin:create-user admin@example.com admin123 admin
+      run: docker compose exec php php bin/console sylius:admin-user:create admin@example.com admin123 --administrator
 
     - name: Esperar a que Sylius esté disponible (desde host)
       working-directory: ./acme
