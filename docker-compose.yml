@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sylius
+      MYSQL_USER: sylius
+      MYSQL_PASSWORD: sylius
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  php:
+    image: php:8.2-cli
+    depends_on:
+      - database
+    volumes:
+      - .:/app
+    working_dir: /app
+    entrypoint: >
+      bash -c "
+        apt-get update &&
+        apt-get install -y git unzip libzip-dev libicu-dev libonig-dev libxml2-dev libpng-dev libjpeg-dev libfreetype6-dev libpq-dev zip curl &&
+        docker-php-ext-install intl pdo pdo_mysql zip &&
+        curl -sS https://getcomposer.org/installer | php &&
+        mv composer.phar /usr/local/bin/composer &&
+        composer install &&
+        php bin/console sylius:install --no-interaction &&
+        php -S 0.0.0.0:8000 -t public
+      "
+    ports:
+      - "8000:8000"

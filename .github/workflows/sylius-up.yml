@@ -1,0 +1,23 @@
+name: Setup Sylius Only
+
+on:
+  push:
+    branches:
+      - development
+
+jobs:
+  setup-sylius:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Compose
+        run: docker-compose up -d
+
+      - name: Esperar unos segundos
+        run: sleep 60
+
+      - name: Verificar contenedores
+        run: docker ps -a
