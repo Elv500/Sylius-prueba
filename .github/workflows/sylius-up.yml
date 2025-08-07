@@ -1,4 +1,4 @@
-name: Setup Sylius Only
+name: Run Sylius API Tests with Docker
 
 on:
   push:
@@ -6,18 +6,48 @@ on:
       - development
 
 jobs:
-  setup-sylius:
+  sylius-tests:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout código
+      uses: actions/checkout@v3
 
-      - name: Set up Docker Compose
-        run: docker compose up -d
+    - name: Set up Docker Compose
+      run: |
+        docker compose up -d
 
-      - name: Esperar unos segundos
-        run: sleep 60
+    - name: Wait for PHP container to be ready
+      run: |
+        # Ajusta "acme_php_1" al nombre real de tu contenedor PHP
+        until docker exec acme_php_1 php bin/console about; do
+          echo "Esperando a que PHP esté listo..."
+          sleep 5
+        done
 
-      - name: Verificar contenedores
-        run: docker ps -a
+    - name: Limpiar cache Sylius para confirmar que funciona
+      run: docker exec acme_php_1 php bin/console cache:clear
+
+    # - name: Ejecutar pruebas con pytest
+    #   run: |
+    #     pytest tests/ --disable-warnings -v --alluredir=reports/allure-results
+
+    # - name: Subir resultados Allure como artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: allure-results
+    #     path: reports/allure-results
+
+    # - name: Generar reporte HTML de Allure
+    #   run: |
+    #     allure generate reports/allure-results --clean -o reports/allure-report-html
+
+    # - name: Subir reporte HTML como artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: allure-report-html
+    #     path: reports/allure-report-html
+
+    - name: Detener contenedores
+      if: always()
+      run: docker compose down -v
