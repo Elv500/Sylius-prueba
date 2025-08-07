@@ -24,9 +24,9 @@ jobs:
     - name: Esperar a que Sylius esté disponible (desde host)
       working-directory: ./acme
       run: |
-        echo "Esperando a que Sylius esté disponible en http://localhost:8000/api/v2"
+        echo "Esperando a que Sylius esté disponible en http://localhost/api/v2"
         for i in {1..30}; do
-          if curl -s --head http://localhost:8000/api/v2 | grep "200 OK" > /dev/null; then
+          if curl -s --head http://localhost/api/v2 | grep "200 OK" > /dev/null; then
             echo "Sylius está listo 🚀"
             exit 0
           fi
@@ -36,12 +36,18 @@ jobs:
         echo "Timeout esperando a Sylius"
         exit 1
 
+    - name: Probar endpoint base y API desde host
+      working-directory: ./acme
+      run: |
+        curl -I http://localhost
+        curl -I http://localhost/api/v2
+
     - name: Probar login Sylius Admin
       working-directory: ./acme
       run: |
         echo "Probando login con sylius@example.com"
         for i in {1..10}; do
-          RES=$(curl -s -w "%{http_code}" -o response.json -X POST http://localhost:8000/api/v2/admin/administrators/token \
+          RES=$(curl -s -w "%{http_code}" -o response.json -X POST http://localhost/api/v2/admin/administrators/token \
             -H "Content-Type: application/json" \
             -d '{"email": "sylius@example.com", "password": "sylius"}')
           if [ "$RES" -eq 200 ]; then
@@ -58,8 +64,6 @@ jobs:
           cat response.json
           exit 1
         fi
-
-    # Aquí puedes agregar el paso para correr tests
 
     - name: Detener contenedores
       if: always()
