@@ -46,9 +46,9 @@ jobs:
       working-directory: ./acme
       run: |
         echo "Probando login con sylius@example.com"
-        RES=$(curl -s -w "%{http_code}" -o response.json -X POST http://localhost/api/v2/shop/authentication-token \
+        RES=$(curl -s -w "%{http_code}" -o response.json -X POST http://localhost/api/v2/admin/administrators/token \
           -H "Content-Type: application/json" \
-          -d '{"email": "sylius@example.com", "password": "sylius"}')
+          -d '{"email": "api@example.com", "password": "sylius-api"}')
 
         if [ "$RES" -ne 200 ]; then
           echo "❌ Login fallido. Código de respuesta: $RES"
