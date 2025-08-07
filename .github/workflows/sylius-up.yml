@@ -1,62 +1,47 @@
-name: Init Sylius via Docker
+name: Levantar Sylius y listar endpoints
 
 on:
   push:
     branches:
-      - development  # Cambia esto si tu rama tiene otro nombre
+      - sylius-tests  # Cambia por tu rama real si es necesario
 
 jobs:
-  setup-sylius:
+  levantar-y-listar:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Crear proyecto Sylius
-      run: |
-        docker run --rm -v ${{ github.workspace }}:/app composer create-project sylius/sylius-standard acme --ignore-platform-reqs --no-scripts --no-install
+      - name: Crear proyecto Sylius
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/app composer create-project sylius/sylius-standard acme --ignore-platform-reqs --no-scripts --no-install
 
-    - name: Corregir permisos
-      run: sudo chown -R $USER:$USER ./acme
+      - name: Corregir permisos
+        run: sudo chown -R $USER:$USER ./acme
 
-    - name: Inicializar Sylius
-      working-directory: ./acme
-      run: make init
+      - name: Inicializar Sylius
+        working-directory: ./acme
+        run: make init
 
-    - name: Crear superusuario directamente en base de datos
-      run: |
-        docker compose exec postgres psql -U sylius -d sylius -c "
-        INSERT INTO sylius_admin_user (id, email, username, password, enabled, roles)
-        VALUES (
-          nextval('sylius_admin_user_id_seq'),
-          'admin@example.com',
-          'admin',
-          '\$2y\$13\$mXQuY1hkWvFZ4Iq9FTAXe.CeqAvF/FGLER/iwTebcMxaQbz8XRz1i', -- contraseña: admin123
-          true,
-          'a:1:{i:0;s:10:\"ROLE_ADMIN\";}'
-        );
-        "
+      - name: Esperar que Sylius esté disponible
+        working-directory: ./acme
+        run: |
+          for i in {1..30}; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/v2 || echo 0)
+            echo "Intento $i - Código: $STATUS"
+            if [ "$STATUS" -eq 200 ]; then
+              echo "✅ Sylius listo"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "❌ Timeout esperando Sylius"
+          exit 1
 
-    - name: Esperar a que Sylius esté disponible (desde host)
-      working-directory: ./acme
-      run: |
-        echo "Esperando a que Sylius esté disponible en http://localhost/api/v2"
-        for i in {1..30}; do
-          if curl -s --head http://localhost/api/v2 | grep "200 OK" > /dev/null; then
-            echo "Sylius está listo 🚀"
-            exit 0
-          fi
-          echo "Esperando..."
-          sleep 5
-        done
-        echo "Timeout esperando a Sylius"
-        exit 1
+      - name: Listar endpoints de la API
+        working-directory: ./acme
+        run: |
+          curl http://localhost/api | jq '.paths | keys'
 
-    - name: Probar endpoint base y API desde host
-      working-directory: ./acme
-      run: |
-        curl -I http://localhost
-        curl -I http://localhost/api/v2
-
-    - name: Detener contenedores
-      if: always()
-      working-directory: ./acme
-      run: docker compose down -v
+      - name: Detener contenedores
+        if: always()
+        working-directory: ./acme
+        run: docker compose down -v
