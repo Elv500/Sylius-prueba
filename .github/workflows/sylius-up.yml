@@ -60,7 +60,7 @@ jobs:
       working-directory: ./acme
       run: |
         echo "Probando login con api@example.com"
-        RES=$(curl -s -w "%{http_code}" -o response.json -X POST http://localhost/api/v2/admin/administrators/token \
+        RES=$(curl -s -w "%{http_code}" -o response.json -X POST http://localhost/api/v2/administrators/token \
           -H "Content-Type: application/json" \
           -d '{"email": "api@example.com", "password": "sylius-api"}')
 
