@@ -1,0 +1,38 @@
+name: Init Sylius via Docker
+
+on:
+  push:
+    branches:
+      - development
+
+jobs:
+  setup-sylius:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Crear proyecto Sylius
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/app composer create-project sylius/sylius-standard acme --ignore-platform-reqs --no-scripts --no-install
+
+    - name: Inicializar Sylius
+      working-directory: ./acme
+      run: make init
+
+    - name: Esperar a que Sylius esté disponible
+      run: |
+        echo "Esperando a que Sylius esté disponible en http://localhost"
+        for i in {1..30}; do
+          if curl -s --head http://localhost | grep "200 OK" > /dev/null; then
+            echo "Sylius está listo 🚀"
+            exit 0
+          fi
+          echo "Esperando..."
+          sleep 5
+        done
+        echo "Timeout esperando a Sylius"
+        exit 1
+
+    - name: Detener contenedores
+      if: always()
+      working-directory: ./acme
+      run: docker compose down -v
